@@ -1,0 +1,26 @@
+---
+- name: Deploy Simple Spring Boot Application
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Stop existing Java application
+      shell: pkill -f 'java -jar' || true
+      ignore_errors: true
+
+    - name: Create deployment directory
+      file:
+        path: /opt/simple-spring-boot
+        state: directory
+        mode: '0755'
+
+    - name: Copy JAR to deployment directory
+      copy:
+        src: target/simple-spring-boot-0.0.1-SNAPSHOT.jar
+        dest: /opt/simple-spring-boot/simple-spring-boot.jar
+        mode: '0755'
+
+    - name: Start Java application
+      shell: nohup java -jar /opt/simple-spring-boot/simple-spring-boot.jar > /opt/simple-spring-boot/app.log 2>&1 &
+      args:
+        chdir: /opt/simple-spring-boot
